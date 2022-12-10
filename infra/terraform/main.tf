@@ -27,3 +27,24 @@ module "vpc" {
 #module "default_vpc" {
 #  source = "./modules/default_vpc"
 #}
+
+module "users" {
+  source = "./modules/users"
+
+  groups = {
+    Admins = ["arn:aws:iam::aws:policy/AdministratorAccess"]
+    Viewers = ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
+  }
+
+  users = {
+    "brandon.kimbrough" = {
+      groups = ["Admins"]
+    }
+    "carlos" = {
+      groups = ["Viewers"]
+    }
+    "sean" = {
+      groups = ["Viewers"]
+    }
+  }
+}
