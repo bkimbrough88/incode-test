@@ -10,6 +10,16 @@ variable "back_task_deny_permissions" {
   default = []
 }
 
+variable "back_image_name" {
+  type = string
+  description = "The name of the image to deploy for the backend service"
+}
+
+variable "back_image_tag" {
+  type = string
+  description = "The tag of the image to deploy for the backend service"
+}
+
 variable "front_task_allow_permissions" {
   type = list(string)
   description = "A list of permissions that the task(s) are allowed to perform"
@@ -20,6 +30,16 @@ variable "front_task_deny_permissions" {
   type = list(string)
   description = "A list of permissions that the task(s) are NOT allowed to perform"
   default = []
+}
+
+variable "front_image_name" {
+  type = string
+  description = "The name of the image to deploy for the frontend service"
+}
+
+variable "front_image_tag" {
+  type = string
+  description = "The tag of the image to deploy for the frontend service"
 }
 
 variable "private_subnets" {

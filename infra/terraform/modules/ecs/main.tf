@@ -1,11 +1,11 @@
 #############################################
 ## CloudWatch Resources
 #############################################
-resource "aws_cloudwatch_metric_alarm" "tbd" {
-  alarm_name          = ""
-  comparison_operator = ""
-  evaluation_periods  = 0
-}
+#resource "aws_cloudwatch_metric_alarm" "tbd" {
+#  alarm_name          = ""
+#  comparison_operator = ""
+#  evaluation_periods  = 0
+#}
 
 #############################################
 ## ECR Resources
@@ -30,7 +30,7 @@ locals {
   back_container_definition = <<DEFINITION
 [
   {
-    "image": "${aws_ecr_repository.repo.repository_url}/incode-test-back:latest",
+    "image": "${aws_ecr_repository.repo.repository_url}/${var.back_image_name}:${var.back_image_tag}",
     "name": "incode-test-back",
     "portMappings": {
       "appProtocol": "http",
@@ -90,7 +90,7 @@ locals {
   front_container_definition = <<DEFINITION
 [
   {
-    "image": "${aws_ecr_repository.repo.repository_url}/incode-test-front:latest",
+    "image": "${aws_ecr_repository.repo.repository_url}/${var.front_image_name}:${var.front_image_tag}",
     "name": "incode-test-front",
     "portMappings": {
       "appProtocol": "http",
@@ -260,7 +260,7 @@ resource "aws_security_group" "allow_internal_http" {
     from_port = local.port
     protocol  = "tcp"
     to_port   = local.port
-    cidr_blocks = var.vpc_cidr
+    cidr_blocks = [var.vpc_cidr]
   }
 
   tags = {

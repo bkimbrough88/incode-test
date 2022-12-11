@@ -48,3 +48,27 @@ module "users" {
     }
   }
 }
+
+module "ecs" {
+  source = "./modules/ecs"
+  back_image_name = "incode-test-back"
+  back_image_tag = "latest"
+  back_task_allow_permissions = [
+    "dynamodb:Describe*",
+    "dynamodb:Get*",
+    "dynamodb:List*",
+    "dynamodb:BatchGetItem",
+    "dynamodb:BatchWriteItem",
+    "dynamodb:ConditionCheckItem",
+    "dynamodb:Scan",
+    "dynamodb:Query",
+    "dynamodb:UpdateItem"
+  ]
+  front_image_name = "incode-test-front"
+  front_image_tag = "latest"
+  private_subnets = module.vpc.main_private_subnet_cidrs
+  public_subnets = module.vpc.main_public_subnet_cidrs
+  use_tls = false
+  vpc_cidr = module.vpc.cidr
+  vpc_id = module.vpc.id
+}
