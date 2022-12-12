@@ -54,6 +54,11 @@ module "ecs" {
   back_image_name = "incode-test-back"
   back_image_tag = "latest"
   back_task_allow_permissions = [
+    "logs:Describe*",
+    "logs:Get*",
+    "logs:List*",
+    "logs:CreateLogGroup",
+    "logs:CreateLogStream",
     "dynamodb:Describe*",
     "dynamodb:Get*",
     "dynamodb:List*",
@@ -62,13 +67,39 @@ module "ecs" {
     "dynamodb:ConditionCheckItem",
     "dynamodb:Scan",
     "dynamodb:Query",
-    "dynamodb:UpdateItem"
+    "dynamodb:UpdateItem",
   ]
+  back_task_resources = ["*"]
   front_image_name = "incode-test-front"
   front_image_tag = "latest"
-  private_subnets = module.vpc.main_private_subnet_cidrs
-  public_subnets = module.vpc.main_public_subnet_cidrs
+  front_task_allow_permissions = [
+    "logs:Describe*",
+    "logs:Get*",
+    "logs:List*",
+    "logs:CreateLogGroup",
+    "logs:CreateLogStream",
+  ]
+  front_task_resources = ["*"]
+  private_subnets = module.vpc.main_private_subnet_ids
+  public_subnets = module.vpc.main_public_subnet_ids
   use_tls = false
   vpc_cidr = module.vpc.cidr
   vpc_id = module.vpc.id
+}
+
+module "dynamodb" {
+  source = "./modules/dynamodb"
+  hash_key = "id"
+  range_key = "datePosted"
+  table_name = "posts"
+  table_attributes = {
+    id = "S"
+    datePosted = "S"
+  }
+  global_secondary_indices = {
+    "datePosted" = {
+      hash_key = "datePosted"
+      projection = "ALL"
+    }
+  }
 }

@@ -14,14 +14,30 @@ output "additional_private_subnet_cidrs" {
   value = [ for az, cidr in var.additional_private_subnet_cidrs : aws_subnet.additional_private[az].cidr_block ]
 }
 
+output "additional_private_subnet_ids" {
+  value = [ for az, cidr in var.additional_private_subnet_cidrs : aws_subnet.additional_private[az].id ]
+}
+
 output "main_private_subnet_cidrs" {
   value = [ for az, cidr in var.main_private_subnet_cidrs : aws_subnet.main_private[az].cidr_block ]
+}
+
+output "main_private_subnet_ids" {
+  value = [ for az, cidr in var.main_private_subnet_cidrs : aws_subnet.main_private[az].id ]
 }
 
 output "additional_public_subnet_cidrs" {
   value = [ for az, cidr in var.additional_public_subnet_cidrs : aws_subnet.additional_public[az].cidr_block ]
 }
 
+output "additional_public_subnet_ids" {
+  value = [ for az, cidr in var.additional_public_subnet_cidrs : aws_subnet.additional_public[az].id ]
+}
+
 output "main_public_subnet_cidrs" {
   value = [ for az, cidr in var.main_public_subnet_cidrs : aws_subnet.main_public[az].cidr_block ]
+}
+
+output "main_public_subnet_ids" {
+  value = [ for az, cidr in var.main_public_subnet_cidrs : aws_subnet.main_public[az].id ]
 }

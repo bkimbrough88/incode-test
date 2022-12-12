@@ -10,6 +10,12 @@ variable "back_task_deny_permissions" {
   default = []
 }
 
+variable "back_task_resources" {
+  type = list(string)
+  description = "A list of resources that the permissions pertain to"
+  default = []
+}
+
 variable "back_image_name" {
   type = string
   description = "The name of the image to deploy for the backend service"
@@ -32,6 +38,12 @@ variable "front_task_deny_permissions" {
   default = []
 }
 
+variable "front_task_resources" {
+  type = list(string)
+  description = "A list of resources that the permissions pertain to"
+  default = []
+}
+
 variable "front_image_name" {
   type = string
   description = "The name of the image to deploy for the frontend service"
@@ -44,12 +56,12 @@ variable "front_image_tag" {
 
 variable "private_subnets" {
   type = list(string)
-  description = "A list of private subnet CIDRs to use when deploying services"
+  description = "A list of private subnet IDs to use when deploying services"
 }
 
 variable "public_subnets" {
   type = list(string)
-  description = "A list of public subnet CIDRs to use when deploying services"
+  description = "A list of public subnet IDs to use when deploying services"
 }
 
 variable "use_tls" {

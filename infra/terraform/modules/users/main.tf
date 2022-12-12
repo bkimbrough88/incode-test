@@ -10,14 +10,6 @@ resource "aws_iam_user" "user" {
   name = each.key
 }
 
-resource "aws_iam_user_login_profile" "login" {
-  for_each = var.users
-
-  pgp_key = each.value.pgp_key
-  user    = aws_iam_user.user[each.key].name
-  password_reset_required = true
-}
-
 resource "aws_iam_user_group_membership" "member" {
   for_each = var.users
 
