@@ -32,73 +32,116 @@ module "users" {
   source = "./modules/users"
 
   groups = {
-    Admins = ["arn:aws:iam::aws:policy/AdministratorAccess"]
-    Viewers = ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
+    Admins  = [data.aws_iam_policy.admin.arn]
+    Viewers = [data.aws_iam_policy.viewer.arn]
   }
 
   users = {
-    "brandon.kimbrough" = {
-      groups = ["Admins"]
-    }
-    "carlos" = {
-      groups = ["Viewers"]
-    }
-    "sean" = {
-      groups = ["Viewers"]
-    }
+    "brandon.kimbrough" = ["Admins"]
+    "carlos"            = ["Viewers"]
+    "sean"              = ["Viewers"]
   }
 }
 
 module "ecs" {
   source = "./modules/ecs"
-  back_image_name = "incode-test-back"
-  back_image_tag = "latest"
-  back_task_allow_permissions = [
-    "logs:Describe*",
-    "logs:Get*",
-    "logs:List*",
-    "logs:CreateLogGroup",
-    "logs:CreateLogStream",
-    "dynamodb:Describe*",
-    "dynamodb:Get*",
-    "dynamodb:List*",
-    "dynamodb:BatchGetItem",
-    "dynamodb:BatchWriteItem",
-    "dynamodb:ConditionCheckItem",
-    "dynamodb:Scan",
-    "dynamodb:Query",
-    "dynamodb:UpdateItem",
-  ]
-  back_task_resources = ["*"]
-  front_image_name = "incode-test-front"
-  front_image_tag = "latest"
-  front_task_allow_permissions = [
-    "logs:Describe*",
-    "logs:Get*",
-    "logs:List*",
-    "logs:CreateLogGroup",
-    "logs:CreateLogStream",
-  ]
-  front_task_resources = ["*"]
-  private_subnets = module.vpc.main_private_subnet_ids
-  public_subnets = module.vpc.main_public_subnet_ids
+  depends_on = [module.vpc, module.dynamodb]
+
+  asg_subnets = module.vpc.main_private_subnet_ids
   use_tls = false
-  vpc_cidr = module.vpc.cidr
-  vpc_id = module.vpc.id
+  vpc_id  = module.vpc.id
+
+  tasks = {
+    "incode-test-back" : {
+      container_name         = "back"
+      container_image        = "incode-test-back"
+      container_image_tag    = "0.0.1"
+      cpu                    = "128"
+      deployment_max_percent = 200
+      internal               = true
+      memory                 = "256"
+      replicas               = 2
+      subnets                = module.vpc.main_private_subnet_ids
+
+      task_iam_policy_statements = {
+        dynamo = {
+          actions   = [
+            "dynamodb:Describe*",
+            "dynamodb:Get*",
+            "dynamodb:List*",
+            "dynamodb:BatchGetItem",
+            "dynamodb:BatchWriteItem",
+            "dynamodb:ConditionCheckItem",
+            "dynamodb:Scan",
+            "dynamodb:Query",
+            "dynamodb:UpdateItem",
+          ]
+          conditions = {}
+          effect    = "Allow"
+          resources = [
+            module.dynamodb.table_arn,
+            "${module.dynamodb.table_arn}/*"
+          ]
+        }
+        logs = {
+          actions   = [
+            "logs:Describe*",
+            "logs:Get*",
+            "logs:List*",
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+          ]
+          conditions = {}
+          effect    = "Allow"
+          resources = [
+            "*"
+          ]
+        }
+      }
+    }
+    "incode-test-front" : {
+      container_name         = "front"
+      container_image        = "incode-test-front"
+      container_image_tag    = "0.0.1"
+      cpu                    = "128"
+      deployment_max_percent = 200
+      internal               = true
+      memory                 = "256"
+      replicas               = 2
+      subnets                = module.vpc.main_private_subnet_ids
+
+      task_iam_policy_statements = {
+        logs = {
+          actions   = [
+            "logs:Describe*",
+            "logs:Get*",
+            "logs:List*",
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+          ]
+          conditions = {}
+          effect    = "Allow"
+          resources = [
+            "*"
+          ]
+        }
+      }
+    }
+  }
 }
 
 module "dynamodb" {
-  source = "./modules/dynamodb"
-  hash_key = "id"
-  range_key = "datePosted"
-  table_name = "posts"
-  table_attributes = {
-    id = "S"
+  source                   = "./modules/dynamodb"
+  hash_key                 = "id"
+  range_key                = "datePosted"
+  table_name               = "posts"
+  table_attributes         = {
+    id         = "S"
     datePosted = "S"
   }
   global_secondary_indices = {
     "datePosted" = {
-      hash_key = "datePosted"
+      hash_key   = "datePosted"
       projection = "ALL"
     }
   }
