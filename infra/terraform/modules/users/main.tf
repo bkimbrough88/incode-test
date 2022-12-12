@@ -2,27 +2,31 @@ resource "aws_iam_group" "group" {
   for_each = var.groups
 
   name = each.key
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_iam_user" "user" {
   for_each = var.users
 
   name = each.key
-}
 
-resource "aws_iam_user_login_profile" "login" {
-  for_each = var.users
-
-  pgp_key = each.value.pgp_key
-  user    = aws_iam_user.user[each.key].name
-  password_reset_required = true
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_iam_user_group_membership" "member" {
   for_each = var.users
 
-  groups = each.value.groups
+  groups = each.value
   user   = aws_iam_user.user[each.key].name
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 module "group_attachments" {

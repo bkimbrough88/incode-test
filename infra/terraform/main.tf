@@ -32,19 +32,117 @@ module "users" {
   source = "./modules/users"
 
   groups = {
-    Admins = ["arn:aws:iam::aws:policy/AdministratorAccess"]
-    Viewers = ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
+    Admins  = [data.aws_iam_policy.admin.arn]
+    Viewers = [data.aws_iam_policy.viewer.arn]
   }
 
   users = {
-    "brandon.kimbrough" = {
-      groups = ["Admins"]
+    "brandon.kimbrough" = ["Admins"]
+    "carlos"            = ["Viewers"]
+    "sean"              = ["Viewers"]
+  }
+}
+
+module "ecs" {
+  source = "./modules/ecs"
+  depends_on = [module.vpc, module.dynamodb]
+
+  asg_subnets = module.vpc.main_private_subnet_ids
+  use_tls = false
+  vpc_id  = module.vpc.id
+
+  tasks = {
+    "incode-test-back" : {
+      container_name         = "back"
+      container_image        = "incode-test-back"
+      container_image_tag    = "0.0.1"
+      cpu                    = "128"
+      deployment_max_percent = 200
+      internal               = true
+      memory                 = "256"
+      replicas               = 2
+      subnets                = module.vpc.main_private_subnet_ids
+
+      task_iam_policy_statements = {
+        dynamo = {
+          actions   = [
+            "dynamodb:Describe*",
+            "dynamodb:Get*",
+            "dynamodb:List*",
+            "dynamodb:BatchGetItem",
+            "dynamodb:BatchWriteItem",
+            "dynamodb:ConditionCheckItem",
+            "dynamodb:Scan",
+            "dynamodb:Query",
+            "dynamodb:UpdateItem",
+          ]
+          conditions = {}
+          effect    = "Allow"
+          resources = [
+            module.dynamodb.table_arn,
+            "${module.dynamodb.table_arn}/*"
+          ]
+        }
+        logs = {
+          actions   = [
+            "logs:Describe*",
+            "logs:Get*",
+            "logs:List*",
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+          ]
+          conditions = {}
+          effect    = "Allow"
+          resources = [
+            "*"
+          ]
+        }
+      }
     }
-    "carlos" = {
-      groups = ["Viewers"]
+    "incode-test-front" : {
+      container_name         = "front"
+      container_image        = "incode-test-front"
+      container_image_tag    = "0.0.1"
+      cpu                    = "128"
+      deployment_max_percent = 200
+      internal               = true
+      memory                 = "256"
+      replicas               = 2
+      subnets                = module.vpc.main_private_subnet_ids
+
+      task_iam_policy_statements = {
+        logs = {
+          actions   = [
+            "logs:Describe*",
+            "logs:Get*",
+            "logs:List*",
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+          ]
+          conditions = {}
+          effect    = "Allow"
+          resources = [
+            "*"
+          ]
+        }
+      }
     }
-    "sean" = {
-      groups = ["Viewers"]
+  }
+}
+
+module "dynamodb" {
+  source                   = "./modules/dynamodb"
+  hash_key                 = "id"
+  range_key                = "datePosted"
+  table_name               = "posts"
+  table_attributes         = {
+    id         = "S"
+    datePosted = "S"
+  }
+  global_secondary_indices = {
+    "datePosted" = {
+      hash_key   = "datePosted"
+      projection = "ALL"
     }
   }
 }
