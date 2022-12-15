@@ -16,7 +16,7 @@ ENV GOARCH=amd64
 RUN go build -o incode-test-back . && chmod +x incode-test-back
 
 ## Deploy
-FROM alpine:3.17
+FROM alpine:3.17 AS final
 
 RUN apk add ca-certificates
 
