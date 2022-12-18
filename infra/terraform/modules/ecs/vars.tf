@@ -24,6 +24,24 @@ variable "tasks" {
   description = "A map of tasks to be deployed"
 }
 
+variable "instance_type" {
+  type = string
+  description = "The instance type to use for the EC2 instance"
+  default = "t2.micro"
+}
+
+variable "asg_min_instance_count" {
+  type = number
+  description = "The minimum number of nodes to have in the ECS autoscaling group"
+  default = 1
+}
+
+variable "asg_max_instance_count" {
+  type = number
+  description = "The maximum number of nodes to have in the ECS autoscaling group"
+  default = 3
+}
+
 variable "asg_subnets" {
   type = list(string)
   description = "A list of subnet IDs that the autoscaling group can deploy into"

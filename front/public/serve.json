@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "api/(.*)",
-      "destination": "http://fdsfdsfdsfdsfsd/$1"
+      "destination": "http://internal-incode-test-back-64354410.us-west-2.elb.amazonaws.com/$1"
     }
   ]
 }
