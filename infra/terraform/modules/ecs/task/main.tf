@@ -26,6 +26,18 @@ resource "aws_iam_policy" "task" {
 }
 
 #############################################
+## ECR Resources
+#############################################
+resource "aws_ecr_repository" "repo" {
+  name         = var.container_image
+  force_delete = true   # just for easy cleanup of environment
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+
+#############################################
 ## ECS Resources
 #############################################
 resource "aws_ecs_task_definition" "task" {
@@ -46,8 +58,8 @@ resource "aws_ecs_service" "service" {
   cluster                    = var.cluster_id
   desired_count              = var.replicas
   deployment_maximum_percent = var.deployment_max_percent
-  launch_type                = "EC2"
   task_definition            = aws_ecs_task_definition.task.arn
+  propagate_tags             = "SERVICE"
 
   load_balancer {
     container_name   = var.container_name
@@ -64,6 +76,15 @@ resource "aws_ecs_service" "service" {
     type  = "binpack"
     field = "cpu"
   }
+
+  capacity_provider_strategy {
+    capacity_provider = var.capacity_provider_name
+    weight            = 100
+  }
+
+  deployment_controller {
+    type = "ECS"
+  }
 }
 
 #############################################
@@ -79,7 +100,7 @@ locals {
 
 resource "aws_lb" "lb" {
   name               = var.name
-  internal           = true
+  internal           = var.internal
   load_balancer_type = "application"
   security_groups    = [aws_security_group.allow_http.id]
   subnets            = var.subnets

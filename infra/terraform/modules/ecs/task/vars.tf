@@ -3,6 +3,11 @@ variable "assume_role_policy" {
   description = "The policy JSON for the task's execution role"
 }
 
+variable "capacity_provider_name" {
+  type        = string
+  description = "The name of the capacity provider"
+}
+
 variable "cluster_id" {
   type        = string
   description = "The id of the cluster to deploy the task into"
@@ -21,11 +26,6 @@ variable "container_image" {
 variable "container_image_tag" {
   type        = string
   description = "The image tag to be used for the container"
-}
-
-variable "image_repo" {
-  type        = string
-  description = "The repository to get the container image from"
 }
 
 variable "cpu" {

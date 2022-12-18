@@ -2,7 +2,7 @@ locals {
   container_definition = <<DEFINITION
 [
   {
-    "image": "${var.image_repo}/${var.container_image}:${var.container_image_tag}",
+    "image": "${aws_ecr_repository.repo.repository_url}:${var.container_image_tag}",
     "name": "${var.container_name}",
     "portMappings":  [
       {
